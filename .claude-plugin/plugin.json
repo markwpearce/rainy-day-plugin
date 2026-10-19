@@ -1,0 +1,7 @@
+{
+  "name": "rainy-day",
+  "version": "0.1.0",
+  "description": "Plain-language usage budgets for Claude Code: warn near the limit, stop tidily, shelve work until your usage resets.",
+  "author": { "name": "Mark Pearce" },
+  "keywords": ["usage", "budget", "limits", "rate-limit"]
+}

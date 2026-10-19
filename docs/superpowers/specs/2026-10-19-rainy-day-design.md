@@ -183,8 +183,10 @@ an item done / remove it.
 ## How it's built (Claude's calls, not Mark's)
 
 - Claude Code plugin layout: `.claude-plugin/plugin.json`,
-  `hooks/hooks.json`, `skills/`, `bin/`, scripts. State in
-  `${CLAUDE_PLUGIN_DATA}` (survives plugin updates); never in
+  `hooks/hooks.json`, `skills/`, `bin/`, scripts. State ("the plugin data
+  dir" above) in `~/.claude/rainy-day/` (`$RAINY_DAY_HOME` overrides), not
+  `${CLAUDE_PLUGIN_DATA}`: Bash-tool commands don't receive that variable and
+  the CLI must share state with the hooks. Survives plugin updates; never in
   `${CLAUDE_PLUGIN_ROOT}`.
 - TypeScript (Mark's call), compiled with `tsc` to `dist/`. The compiled
   `dist/` is committed so an installed plugin needs only Node, with no build

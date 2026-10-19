@@ -1,0 +1,11 @@
+{
+  "name": "rainy-day",
+  "owner": { "name": "Mark Pearce" },
+  "plugins": [
+    {
+      "name": "rainy-day",
+      "source": "./",
+      "description": "Plain-language usage budgets for Claude Code."
+    }
+  ]
+}
