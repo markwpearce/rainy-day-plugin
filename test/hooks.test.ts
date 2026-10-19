@@ -15,8 +15,9 @@ const NOW = Date.parse('2026-10-19T19:00:00Z');
 const root = new URL('..', import.meta.url).pathname;
 let cwd: string;
 
-const seedUsage = (weekly: number) =>
-  writeJson(statePath('usage.json'), { weekly: { usedPct: weekly, resetsAt: NOW + 1e8 }, fetchedAt: NOW });
+// The compiled entry uses the real clock, so its tests seed the cache at Date.now().
+const seedUsage = (weekly: number, fetchedAt = NOW) =>
+  writeJson(statePath('usage.json'), { weekly: { usedPct: weekly, resetsAt: fetchedAt + 1e8 }, fetchedAt });
 const weekly60 = () => addLimit({ meter: 'weekly', stopAt: 60, scope: { kind: 'global' }, until: { kind: 'cleared' } }, NOW);
 const toolInput = (command = 'ls') => ({ session_id: 's1', cwd, hook_event_name: 'PreToolUse', tool_name: 'Bash', tool_input: { command } });
 
@@ -89,7 +90,7 @@ test('session-start with nothing shelved does nothing', () => {
 
 test('compiled hook entry prints nothing under RAINY_DAY_PROBE', () => {
   weekly60();
-  seedUsage(99);
+  seedUsage(99, Date.now());
   const r = spawnSync('node', [join(root, 'dist/hooks/entry.js'), 'pre-tool-use'], {
     input: JSON.stringify(toolInput()),
     env: { ...process.env, RAINY_DAY_PROBE: '1' },
@@ -101,7 +102,7 @@ test('compiled hook entry prints nothing under RAINY_DAY_PROBE', () => {
 
 test('compiled hook entry emits JSON for a reached limit', () => {
   weekly60();
-  seedUsage(99);
+  seedUsage(99, Date.now());
   const r = spawnSync('node', [join(root, 'dist/hooks/entry.js'), 'pre-tool-use'], {
     input: JSON.stringify(toolInput()),
     env: { ...process.env },

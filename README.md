@@ -86,8 +86,7 @@ both as shown by `/usage`.
 - Hook errors are shown to you as a one-line notice; details go to
   `~/.claude/rainy-day/errors.log`.
 - Two sessions changing limits at the same instant can lose one change.
-- Verified in terminal sessions and VS Code (Claude Code 2.1.303, Team plan).
-  Not yet verified in the Claude desktop app.
+- Verified in terminal sessions, Claude desktop app and VS Code (Claude Code 2.1.303, Team plan).
 
 ## Development
 
@@ -106,6 +105,12 @@ npm run build
 `dist/` is committed so the installed plugin needs only Node 22+. Rebuild
 and commit it with any source change. Design and plan live in
 `docs/superpowers/`.
+
+## Contributing
+
+`main` is protected, so changes go through a pull request. The `test`
+workflow runs the typecheck, the tests, and a check that the committed
+`dist/` matches a fresh build; it must pass before merging.
 
 ## License
 
