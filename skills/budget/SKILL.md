@@ -18,12 +18,17 @@ There are two meters, both percentages of the user's plan:
 ## Setting a limit
 
 1. Run `rainy-day status` to get the current readings.
-2. Interpret the request:
-   - "use up to N% (more) of my session/week" → N points on top of the
-     current reading: `rainy-day set <meter> N --add`
-   - "until I reach N%" / "stop at N%" → `rainy-day set <meter> N`
+2. Interpret the request. A percentage is a reading on the meter unless the
+   user clearly says it's an amount on top of the current reading:
+   - "only use up to N%", "until I reach N%", "stop at N%" → stop when the
+     meter reads N%: `rainy-day set <meter> N`. At 23%, "up to 25% of my
+     session" stops at 25%, not 48%.
    - "keep N% for <day/later>" → stop at 100 − N:
      `rainy-day set <meter> <100−N>`
+   - Only explicitly relative wording ("another N%", "N% more", "spend N%
+     from here") adds to the current reading: `rainy-day set <meter> N --add`
+   - If N is at or below the current reading, say so ("you're already at
+     23%") and ask whether they meant a higher line.
    - "tokens" or "credits" with no meter named: weekly if they mention days
      or the week, otherwise ask.
 3. If it's unclear whether the limit covers only this session or every

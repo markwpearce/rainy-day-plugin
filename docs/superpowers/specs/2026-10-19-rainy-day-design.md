@@ -104,9 +104,11 @@ A limit has:
 
 Interpretation rules (Claude applies them, then confirms):
 
-- "Use up to N% of my session/week" → N points more than the current
-  reading. At 16%, "up to 20%" stops at 36%.
-- "Until I reach N%" → stop at N%.
+- "Use up to N% of my session/week" / "until I reach N%" → stop when the
+  meter reads N%. (Corrected 2026-10-19 after real use: Mark means the
+  meter reading, not N more points.)
+- Only explicitly relative wording ("another N%", "N% more") adds N to the
+  current reading.
 - "Keep N% for <day>" → stop at 100 − N.
 - Unclear scope or duration → ask. Mark wants this asked case by case, not
   defaulted.
