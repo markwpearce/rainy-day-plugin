@@ -1,0 +1,24 @@
+You are currently using your subscription to power your Claude Code usage
+
+Current session: 5% used · resets Oct 19 at 8:30pm (America/Halifax)
+Current week (all models): 77% used · resets Oct 22 at 7am (America/Halifax)
+
+What's contributing to your limits usage?
+Approximate, based on local sessions on this machine — does not include other devices or claude.ai. Behaviors are independent characteristics, not a breakdown.
+
+Last 24h · 227 requests · 7 sessions
+  97% of your usage came from subagent-heavy sessions
+  36% of your usage went to always-on context over 40k tokens
+  Top skills: /code-review 19%, /superpowers:brainstorming 2%, /statusline 1%
+  Top subagents: general-purpose 3%, claude-code-guide 1%, statusline 1%
+  Top plugins: superpowers 2%
+
+Last 7d · 3410 requests · 20 sessions
+  93% of your usage came from subagent-heavy sessions
+  65% of your usage was at >150k context
+  55% of your usage came from sessions active for 8+ hours
+  16% of your usage went to always-on context over 40k tokens
+  Top skills: /superpowers:test-driven-development 4%, /pr-voice 3%, /code-review 2%, /rokubot-examples 1%, /superpowers:writing-plans 1%, /anthropic-skills:google-workspace 1%
+  Top subagents: general-purpose 37%, Explore 2%, superpowers:test-driven-development 1%
+  Top plugins: superpowers 6%, anthropic-skills 1%
+  Top MCP servers: Claude Browser 1%
