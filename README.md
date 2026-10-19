@@ -21,18 +21,20 @@ What happens:
 ## Install
 
 ```bash
-claude plugin marketplace add ~/redspace/rainy-day-plugin
+claude plugin marketplace add markwpearce/rainy-day-plugin
 ```
 
 ```bash
 claude plugin install rainy-day@rainy-day
 ```
 
-Or try it for one session without installing:
+Or try it for one session from a local clone, without installing:
 
 ```bash
-claude --plugin-dir ~/redspace/rainy-day-plugin
+claude --plugin-dir path/to/rainy-day-plugin
 ```
+
+Needs Node 22+ and a Claude subscription plan (the limits come from `/usage`).
 
 ## The `rainy-day` command
 
