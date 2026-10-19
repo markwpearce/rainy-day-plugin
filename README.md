@@ -107,6 +107,12 @@ npm run build
 and commit it with any source change. Design and plan live in
 `docs/superpowers/`.
 
+## Contributing
+
+`main` is protected, so changes go through a pull request. The `test`
+workflow runs the typecheck, the tests, and a check that the committed
+`dist/` matches a fresh build; it must pass before merging.
+
 ## License
 
 MIT

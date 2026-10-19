@@ -15,19 +15,21 @@ npm run build                         # compile src/ -> dist/ (tsconfig.build.js
 claude --plugin-dir .                 # try the plugin in one session without installing
 ```
 
-**`dist/` is committed** — the installed plugin runs it directly with no build step. Rebuild and commit `dist/` with every source change. `test/hooks.test.ts` and `test/cli.test.ts` build `dist/` in `beforeAll` and spawn the compiled entry points, so they exercise the real output.
+**`dist/` is committed** — the installed plugin runs it directly with no build step. Rebuild and commit `dist/` with every source change. `test/hooks.test.ts` builds `dist/` in `beforeAll` and spawns the compiled hook entry, so it exercises the real output. CI fails if `dist/` differs from a fresh build.
+
+**All changes go through a PR.** `main` is protected: the `test` workflow (`.github/workflows/test.yml`: typecheck, tests, dist freshness) must pass before merging. Work on a branch and push it with an explicit refspec (`git push origin <branch>:<branch>`).
 
 ## Architecture
 
-Three surfaces share one state directory, `~/.claude/rainy-day/` (override with `RAINY_DAY_HOME`; tests set it to a temp dir in `beforeEach`). `CLAUDE_PLUGIN_DATA` isn't visible to Bash-tool commands, which is why both sides use this fixed path (`src/paths.ts`). All writes go through `writeJson` in `src/store.ts` (temp file + rename); reads fall back to defaults on any error.
+Three surfaces share one state directory, `~/.claude/rainy-day/` (override with `RAINY_DAY_HOME`; tests set it to a temp dir in `beforeEach`). `CLAUDE_PLUGIN_DATA` isn't visible to Bash-tool commands, which is why both sides use this fixed path (`src/paths.ts`). All writes go through `writeJson` in `src/store.ts` (temp file + rename); reads fall back to defaults when a file is missing; `limits.json` is read with `readJsonStrict`, so a corrupt file is an error rather than silently "no limits".
 
-- **Hooks** (`hooks/hooks.json` → `dist/hooks/entry.js <event>`): `entry.ts` dispatches to `pre-tool-use`, `user-prompt-submit` or `session-start`. A hook must never break Claude: any exception is appended to `errors.log` and the hook exits 0 with no output.
+- **Hooks** (`hooks/hooks.json` → `dist/hooks/entry.js <event>`): `entry.ts` dispatches to `pre-tool-use`, `user-prompt-submit` or `session-start`. A hook must never break Claude: any exception is appended to `errors.log`, the user gets a one-line `systemMessage` saying limits may not be enforced, and the hook exits 0.
 - **CLI** (`bin/rainy-day` → `dist/bin.js` → `src/cli.ts`): `status`, `set`, `clear`, `shelve`, `shelf`, `unshelve`. Session-scoped limits use `CLAUDE_CODE_SESSION_ID` from the environment.
-- **Skill** (`skills/budget/SKILL.md`): tells Claude how to turn user wording into `rainy-day set` calls (`--add` for "use N% more", `100−N` for "keep N%") and how to wrap up or shelve when a limit is reached. Hook messages in `src/gate.ts` refer to this skill, so keep the two consistent.
+- **Skill** (`skills/budget/SKILL.md`): tells Claude how to turn user wording into `rainy-day set` calls ("up to N%" / "until N%" is the absolute meter reading; `--add` only for explicitly relative wording like "another N%"; `100−N` for "keep N%", with an end date suggested) and how to wrap up or shelve when a limit is reached. Hook messages in `src/gate.ts` refer to this skill, so keep the two consistent.
 
 ### Reading usage (`src/usage/`)
 
-`read.ts` runs `claude -p /usage` (0 tokens, ~2 s), parses its human-readable output with `parse.ts` (timezone handling in `zoned.ts`), and caches it in `usage.json` for 4 minutes. A failed probe is recorded in `usage-failure.json` and not retried until the cache interval passes. A cached reading up to 30 minutes old is used as a stale fallback. The probe sets `RAINY_DAY_PROBE=1`, and `entry.ts` exits immediately when it sees that, because the child `claude` runs these same hooks. In the desktop app, `CLAUDE_CODE_EXECPATH` points to the bundled binary. Parser fixtures from real output are in `test/fixtures/`. If the `/usage` format changes, the result shows up as "usage unknown" and the parser needs updating.
+`read.ts` runs `claude --strict-mcp-config -p /usage` (`USAGE_ARGS`; 0 tokens, ~2 s, skips MCP servers; `--bare` can't be used because it doesn't report plan usage), parses its human-readable output with `parse.ts` (timezone handling in `zoned.ts`), and caches it in `usage.json` for 4 minutes. A failed probe is recorded in `usage-failure.json` and not retried until the cache interval passes. A cached reading up to 30 minutes old is used as a stale fallback. The probe sets `RAINY_DAY_PROBE=1`, and `entry.ts` exits immediately when it sees that, because the child `claude` runs these same hooks. In the desktop app, `CLAUDE_CODE_EXECPATH` points to the bundled binary. Parser fixtures from real output are in `test/fixtures/`. If the `/usage` format changes, the result shows up as "usage unknown" and the parser needs updating.
 
 ### Enforcement (`src/gate.ts`, `src/limits.ts`)
 
