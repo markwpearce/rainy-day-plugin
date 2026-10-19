@@ -28,3 +28,11 @@ test('readJson returns the fallback for a corrupt file', () => {
   writeFileSync(file, '{not json');
   expect(readJson(file, 'fb')).toBe('fb');
 });
+
+test('readJsonStrict returns the fallback for a missing file but throws on a corrupt one', async () => {
+  const { readJsonStrict } = await import('../src/store.js');
+  expect(readJsonStrict(join(stateDir(), 'nope.json'), [])).toEqual([]);
+  const file = join(stateDir(), 'bad.json');
+  writeFileSync(file, '{not json');
+  expect(() => readJsonStrict(file, [])).toThrow(/bad\.json/);
+});

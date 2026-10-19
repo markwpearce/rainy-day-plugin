@@ -9,6 +9,21 @@ export function readJson<T>(file: string, fallback: T): T {
   }
 }
 
+/** Like readJson, but a file that exists and can't be parsed is an error, not "empty". */
+export function readJsonStrict<T>(file: string, fallback: T): T {
+  let text: string;
+  try {
+    text = readFileSync(file, 'utf8');
+  } catch {
+    return fallback;
+  }
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new Error(`${file} is corrupt; fix or delete it`);
+  }
+}
+
 export function writeJson(file: string, value: unknown): void {
   mkdirSync(dirname(file), { recursive: true });
   const tmp = `${file}.${process.pid}.tmp`;

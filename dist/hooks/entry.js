@@ -3,7 +3,7 @@ import { stateDir, statePath } from '../paths.js';
 import { preToolUse } from './pre-tool-use.js';
 import { sessionStart } from './session-start.js';
 import { userPromptSubmit } from './user-prompt-submit.js';
-// Hooks must never break Claude: on any error, log it and exit 0 with no output.
+// Hooks must never break Claude: on any error, log it, tell the user, and exit 0.
 const handlers = {
     'pre-tool-use': preToolUse,
     'user-prompt-submit': userPromptSubmit,
@@ -25,6 +25,9 @@ try {
     run();
 }
 catch (e) {
+    process.stdout.write(JSON.stringify({
+        systemMessage: `rainy-day hit an error (${e.message}), so your limits may not be enforced. Details: ${statePath('errors.log')}`,
+    }));
     try {
         mkdirSync(stateDir(), { recursive: true });
         appendFileSync(statePath('errors.log'), `${new Date().toISOString()} ${process.argv[2]}: ${e.stack ?? e}\n`);
