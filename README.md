@@ -74,8 +74,20 @@ both as shown by `/usage`.
   heavy burst can run a little past the line before it's caught.
 - `/usage` output is meant for people; a format change in a future Claude
   Code version would show up as "usage unknown" until the parser is updated.
-- Verified end-to-end in terminal `claude -p` sessions (Claude Code 2.1.303,
-  Team plan). Not yet verified in the desktop app or VS Code.
+- An "all sessions" limit pauses every session once it's reached, including
+  the ones you were saving usage for. Give it an end date ("keep 25% for
+  Monday" → until Monday morning), or clear it with `rainy-day clear`.
+- Each usage check starts `claude -p "/usage"` (skipping MCP servers). Other
+  plugins' startup hooks still run in that process.
+- It relies on things Claude Code doesn't document as stable: the wording of
+  `/usage`, `CLAUDE_CODE_EXECPATH` (to find `claude` in the desktop app), and
+  `CLAUDE_CODE_SESSION_ID` (for this-session-only limits). A change there
+  shows up as "usage unknown" or an error notice, not as silent enforcement.
+- Hook errors are shown to you as a one-line notice; details go to
+  `~/.claude/rainy-day/errors.log`.
+- Two sessions changing limits at the same instant can lose one change.
+- Verified in terminal sessions and VS Code (Claude Code 2.1.303, Team plan).
+  Not yet verified in the Claude desktop app.
 
 ## Development
 
@@ -94,3 +106,7 @@ npm run build
 `dist/` is committed so the installed plugin needs only Node 22+. Rebuild
 and commit it with any source change. Design and plan live in
 `docs/superpowers/`.
+
+## License
+
+MIT

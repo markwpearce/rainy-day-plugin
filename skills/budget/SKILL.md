@@ -24,7 +24,9 @@ There are two meters, both percentages of the user's plan:
      meter reads N%: `rainy-day set <meter> N`. At 23%, "up to 25% of my
      session" stops at 25%, not 48%.
    - "keep N% for <day/later>" → stop at 100 − N:
-     `rainy-day set <meter> <100−N>`
+     `rainy-day set <meter> <100−N>`. This usually means every session
+     (`--scope global`), which also blocks the work it's being saved for, so
+     suggest ending it when that day starts (`--until <ISO date>`).
    - Only explicitly relative wording ("another N%", "N% more", "spend N%
      from here") adds to the current reading: `rainy-day set <meter> N --add`
    - If N is at or below the current reading, say so ("you're already at

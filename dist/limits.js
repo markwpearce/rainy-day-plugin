@@ -1,5 +1,5 @@
 import { statePath } from './paths.js';
-import { readJson, writeJson } from './store.js';
+import { readJsonStrict, writeJson } from './store.js';
 export const GRACE_CALLS = 5;
 export const WARN_WITHIN = 5;
 const FILE = () => statePath('limits.json');
@@ -8,7 +8,7 @@ export function formatWhen(epoch) {
     return new Date(epoch).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
 }
 export function loadLimits() {
-    return readJson(FILE(), []);
+    return readJsonStrict(FILE(), []);
 }
 export function saveLimits(limits, now = Date.now()) {
     writeJson(FILE(), limits.filter((l) => !isExpired(l, now)));

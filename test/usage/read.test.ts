@@ -69,3 +69,8 @@ test('readFreshCachedUsage ignores a cache older than 30 minutes', async () => {
   writeJson(statePath('usage.json'), snapAt(NOW - 10 * MIN));
   expect(readFreshCachedUsage(NOW)).toEqual(snapAt(NOW - 10 * MIN));
 });
+
+test('the usage probe skips MCP servers', async () => {
+  const { USAGE_ARGS } = await import('../../src/usage/read.js');
+  expect(USAGE_ARGS).toEqual(['--strict-mcp-config', '-p', '/usage']);
+});

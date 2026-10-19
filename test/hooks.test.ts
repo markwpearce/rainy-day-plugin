@@ -1,5 +1,5 @@
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdtempSync, realpathSync } from 'node:fs';
+import { mkdtempSync, realpathSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { beforeAll, beforeEach, expect, test } from 'vitest';
@@ -109,4 +109,15 @@ test('compiled hook entry emits JSON for a reached limit', () => {
   });
   expect(r.status).toBe(0);
   expect(JSON.parse(r.stdout).hookSpecificOutput.hookEventName).toBe('PreToolUse');
+});
+
+test('compiled hook entry warns the user when a hook fails', () => {
+  writeFileSync(statePath('limits.json'), '{corrupt');
+  const r = spawnSync('node', [join(root, 'dist/hooks/entry.js'), 'pre-tool-use'], {
+    input: JSON.stringify(toolInput()),
+    env: { ...process.env },
+    encoding: 'utf8',
+  });
+  expect(r.status).toBe(0);
+  expect(JSON.parse(r.stdout).systemMessage).toMatch(/rainy-day hit an error.*limits may not be enforced/);
 });

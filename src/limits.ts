@@ -1,5 +1,5 @@
 import { statePath } from './paths.js';
-import { readJson, writeJson } from './store.js';
+import { readJsonStrict, writeJson } from './store.js';
 import type { Limit, Meter, UsageSnapshot } from './types.js';
 
 export const GRACE_CALLS = 5;
@@ -14,7 +14,7 @@ export function formatWhen(epoch: number): string {
 }
 
 export function loadLimits(): Limit[] {
-  return readJson<Limit[]>(FILE(), []);
+  return readJsonStrict<Limit[]>(FILE(), []);
 }
 
 export function saveLimits(limits: Limit[], now = Date.now()): void {

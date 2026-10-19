@@ -19,8 +19,11 @@ export function claudeBinary(): string {
   return exec && existsSync(exec) ? exec : 'claude';
 }
 
+// --strict-mcp-config: don't start the user's MCP servers just to read usage.
+export const USAGE_ARGS = ['--strict-mcp-config', '-p', '/usage'];
+
 function runUsage(): string | null {
-  const r = spawnSync(claudeBinary(), ['-p', '/usage'], {
+  const r = spawnSync(claudeBinary(), USAGE_ARGS, {
     env: { ...process.env, RAINY_DAY_PROBE: '1' },
     timeout: 20_000,
     encoding: 'utf8',
