@@ -32,23 +32,36 @@ export function readCachedUsage(): UsageSnapshot | null {
   return readJson<UsageSnapshot | null>(statePath('usage.json'), null);
 }
 
+/** The cached snapshot, or null when it's too old to present as current. */
+export function readFreshCachedUsage(now: number): UsageSnapshot | null {
+  const cached = readCachedUsage();
+  return cached && now - cached.fetchedAt < STALE_LIMIT ? cached : null;
+}
+
+interface Failure { at: number; reason: string }
+
 export function getUsage(opts: { maxAgeMs?: number; now?: number; run?: () => string | null } = {}): UsageResult {
   const now = opts.now ?? Date.now();
+  const maxAge = opts.maxAgeMs ?? DEFAULT_MAX_AGE;
   const cached = readCachedUsage();
-  if (cached && now - cached.fetchedAt < (opts.maxAgeMs ?? DEFAULT_MAX_AGE)) {
+  if (cached && now - cached.fetchedAt < maxAge) {
     return { ok: true, snapshot: cached, stale: false };
   }
+
+  const fallback = (reason: string): UsageResult =>
+    cached && now - cached.fetchedAt < STALE_LIMIT ? { ok: true, snapshot: cached, stale: true } : { ok: false, reason };
+
+  // Don't re-run a failing probe on every tool call; wait out the cache interval.
+  const failure = readJson<Failure | null>(statePath('usage-failure.json'), null);
+  if (failure && now - failure.at < maxAge) return fallback(failure.reason);
+
   const text = (opts.run ?? runUsage)();
   const fresh = text === null ? null : parseUsage(text, now);
   if (fresh) {
     writeJson(statePath('usage.json'), fresh);
     return { ok: true, snapshot: fresh, stale: false };
   }
-  if (cached && now - cached.fetchedAt < STALE_LIMIT) {
-    return { ok: true, snapshot: cached, stale: true };
-  }
-  return {
-    ok: false,
-    reason: text === null ? `couldn't run \`${claudeBinary()} -p /usage\`` : "couldn't understand the /usage output",
-  };
+  const reason = text === null ? `couldn't run \`${claudeBinary()} -p /usage\`` : "couldn't understand the /usage output";
+  writeJson(statePath('usage-failure.json'), { at: now, reason } satisfies Failure);
+  return fallback(reason);
 }

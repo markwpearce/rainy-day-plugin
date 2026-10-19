@@ -62,7 +62,7 @@ both as shown by `/usage`.
   With no limits set, the `PreToolUse` hook returns immediately without
   reading usage.
 - **State:** `~/.claude/rainy-day/` (`limits.json`, `shelf.json`,
-  `usage.json`, `errors.log`). Set `RAINY_DAY_HOME` to use another folder.
+  `usage.json`, `usage-failure.json`, `errors.log`). Set `RAINY_DAY_HOME` to use another folder.
 - **If usage can't be read,** you're told once per session that the limit
   isn't being enforced. It never pretends.
 

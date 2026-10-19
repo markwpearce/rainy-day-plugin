@@ -88,3 +88,20 @@ test('isOwnCommand', () => {
   expect(isOwnCommand('Bash', { command: 'rainy-day status\nrm x' })).toBe(false);
   expect(isOwnCommand('Write', { command: 'rainy-day status' })).toBe(false);
 });
+
+test('isOwnCommand rejects background jobs, process substitution, and redirection', () => {
+  expect(isOwnCommand('Bash', { command: 'rainy-day status & rm -rf x' })).toBe(false);
+  expect(isOwnCommand('Bash', { command: 'rainy-day status <(rm -rf x)' })).toBe(false);
+  expect(isOwnCommand('Bash', { command: 'rainy-day status > ~/.zshrc' })).toBe(false);
+  expect(isOwnCommand('Bash', { command: 'rainy-day status "$HOME"' })).toBe(false);
+});
+
+test('isOwnCommand rejects a heredoc that ends early and runs more', () => {
+  expect(isOwnCommand('Bash', { command: "rainy-day shelve --title t <<'EOF'\nEOF\nrm -rf ~\nEOF" })).toBe(false);
+});
+
+test('isOwnCommand allows quoted titles containing shell punctuation', () => {
+  expect(isOwnCommand('Bash', { command: 'rainy-day shelve --title "Fix A; B | C" --note \'x && y\'' })).toBe(true);
+  expect(isOwnCommand('Bash', { command: 'rainy-day set weekly 75 --scope session --until 2026-10-25T09:00 --label "keep 25% for Monday"' })).toBe(true);
+  expect(isOwnCommand('Bash', { command: 'rainy-day shelve --title "Dark mode" <<-"NOTE"\nLeft: toggle\nNOTE' })).toBe(true);
+});

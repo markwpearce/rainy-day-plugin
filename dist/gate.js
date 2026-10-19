@@ -1,19 +1,26 @@
 import { activeLimits, assess, GRACE_CALLS, meterName } from './limits.js';
 const ALWAYS_ALLOWED_TOOLS = new Set(['AskUserQuestion']);
-const SHELL_CONTROL = /&&|\|\||;|\||`|\$\(/;
-const QUOTED_HEREDOC = /<<-?\s*(['"])([A-Za-z_][A-Za-z0-9_]*)\1\s*$/;
+// Allow-list for the first line: `rainy-day` then plain words, flags, and quoted
+// strings that can't expand (no $ or backtick inside double quotes), optionally
+// ending in a quoted (literal) heredoc. Anything else could run a second command.
+const ARG = String.raw `(?:[\w.%:+/=-]+|"[^"$\x60\\]*"|'[^']*')`;
+const OWN_FIRST_LINE = new RegExp(String.raw `^rainy-day(?:[ \t]+${ARG})*(?:[ \t]+<<-?[ \t]*(['"])([A-Za-z_]\w*)\1)?[ \t]*$`);
 /** A plain `rainy-day …` invocation, optionally fed a quoted (literal) heredoc. */
 export function isOwnCommand(toolName, toolInput) {
     if (toolName !== 'Bash' || typeof toolInput?.command !== 'string')
         return false;
     const lines = toolInput.command.trim().split('\n');
-    const first = lines[0];
-    if (!/^\s*rainy-day(\s|$)/.test(first) || SHELL_CONTROL.test(first))
+    const m = OWN_FIRST_LINE.exec(lines[0]);
+    if (!m)
         return false;
+    const delim = m[2];
     if (lines.length === 1)
-        return true;
-    const heredoc = QUOTED_HEREDOC.exec(first);
-    return heredoc !== null && lines[lines.length - 1].trim() === heredoc[2];
+        return delim === undefined;
+    if (delim === undefined)
+        return false;
+    // The heredoc must end on the last line and nowhere earlier.
+    const body = lines.slice(1, -1);
+    return lines[lines.length - 1].trim() === delim && body.every((l) => l.trim() !== delim);
 }
 const wrapUp = (l, used) => `rainy-day: the user's ${meterName(l.meter)} usage budget is reached (${used}% used, limit ${l.stopAt}%, id ${l.id}). ` +
     'Finish only the small step you are in the middle of; start nothing new. Then tell the user where things stand ' +

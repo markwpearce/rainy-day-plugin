@@ -59,6 +59,14 @@ test('user-prompt-submit lists active limits from cached usage', () => {
   expect(out?.hookSpecificOutput.hookEventName).toBe('UserPromptSubmit');
 });
 
+test('user-prompt-submit does not present a stale cache as current', () => {
+  weekly60();
+  writeJson(statePath('usage.json'), { weekly: { usedPct: 80, resetsAt: NOW + 1e8 }, fetchedAt: NOW - 2 * 24 * 3.6e6 });
+  const ctx = userPromptSubmit({ session_id: 's1', cwd }, NOW)?.hookSpecificOutput.additionalContext;
+  expect(ctx).not.toMatch(/now 80%/);
+  expect(ctx).toMatch(/usage unknown/);
+});
+
 test('user-prompt-submit with no limits does nothing', () => {
   expect(userPromptSubmit({ session_id: 's1', cwd }, NOW)).toBeNull();
 });

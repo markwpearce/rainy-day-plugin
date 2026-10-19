@@ -50,3 +50,22 @@ test('unparseable output is treated like a failed refresh', () => {
   const r = getUsage({ now: NOW, run: () => 'Something changed in the format' });
   expect(r.ok).toBe(false);
 });
+
+test('after a failed refresh, the next call within the cache interval does not re-run claude', () => {
+  let calls = 0;
+  const failing = () => (calls++, null);
+  getUsage({ now: NOW, run: failing });
+  const r = getUsage({ now: NOW + 1 * MIN, run: failing });
+  expect(calls).toBe(1);
+  expect(r.ok).toBe(false);
+  getUsage({ now: NOW + 5 * MIN, run: failing });
+  expect(calls).toBe(2);
+});
+
+test('readFreshCachedUsage ignores a cache older than 30 minutes', async () => {
+  const { readFreshCachedUsage } = await import('../../src/usage/read.js');
+  writeJson(statePath('usage.json'), snapAt(NOW - 31 * MIN));
+  expect(readFreshCachedUsage(NOW)).toBeNull();
+  writeJson(statePath('usage.json'), snapAt(NOW - 10 * MIN));
+  expect(readFreshCachedUsage(NOW)).toEqual(snapAt(NOW - 10 * MIN));
+});
