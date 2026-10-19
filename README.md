@@ -86,8 +86,7 @@ both as shown by `/usage`.
 - Hook errors are shown to you as a one-line notice; details go to
   `~/.claude/rainy-day/errors.log`.
 - Two sessions changing limits at the same instant can lose one change.
-- Verified in terminal sessions and VS Code (Claude Code 2.1.303, Team plan).
-  Not yet verified in the Claude desktop app.
+- Verified in terminal sessions, Claude desktop app and VS Code (Claude Code 2.1.303, Team plan).
 
 ## Development
 
