@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [
+          { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/dist/hooks/entry.js", "pre-tool-use"], "timeout": 30 }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/dist/hooks/entry.js", "user-prompt-submit"], "timeout": 10 }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear",
+        "hooks": [
+          { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/dist/hooks/entry.js", "session-start"], "timeout": 10 }
+        ]
+      }
+    ]
+  }
+}
