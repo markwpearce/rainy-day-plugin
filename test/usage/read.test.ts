@@ -51,6 +51,18 @@ test('unparseable output is treated like a failed refresh', () => {
   expect(r.ok).toBe(false);
 });
 
+test('cost-only output from a logged-out CLI says to log in', () => {
+  const loggedOut = readFileSync(new URL('../fixtures/usage-logged-out-2.1.304.txt', import.meta.url), 'utf8');
+  const r = getUsage({ now: NOW, run: () => loggedOut });
+  expect(r.ok).toBe(false);
+  expect(!r.ok && r.reason).toMatch(/not logged in.*claude auth login/);
+});
+
+test('an authentication error says to log in', () => {
+  const r = getUsage({ now: NOW, run: () => 'Failed to authenticate: OAuth session expired and could not be refreshed' });
+  expect(!r.ok && r.reason).toMatch(/claude auth login/);
+});
+
 test('after a failed refresh, the next call within the cache interval does not re-run claude', () => {
   let calls = 0;
   const failing = () => (calls++, null);
