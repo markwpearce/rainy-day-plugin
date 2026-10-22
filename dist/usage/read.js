@@ -19,7 +19,21 @@ function runUsage() {
         timeout: 20_000,
         encoding: 'utf8',
     });
-    return r.error || r.status !== 0 ? null : r.stdout;
+    if (r.error)
+        return null;
+    if (r.status === 0)
+        return r.stdout;
+    // Keep a failed run's output only when it explains the failure as a login problem.
+    const out = `${r.stdout}${r.stderr}`;
+    return AUTH_ERROR.test(out) ? out : null;
+}
+const AUTH_ERROR = /failed to authenticate|not logged in|please run \/login/i;
+/**
+ * Without a subscription login, `/usage` prints only the session cost summary
+ * ("Total cost: …") and no plan meters.
+ */
+function looksLoggedOut(text) {
+    return AUTH_ERROR.test(text) || (/^Total cost:/m.test(text) && !/% used/.test(text));
 }
 export function readCachedUsage() {
     return readJson(statePath('usage.json'), null);
@@ -47,7 +61,11 @@ export function getUsage(opts = {}) {
         writeJson(statePath('usage.json'), fresh);
         return { ok: true, snapshot: fresh, stale: false };
     }
-    const reason = text === null ? `couldn't run \`${claudeBinary()} -p /usage\`` : "couldn't understand the /usage output";
+    const reason = text === null
+        ? `couldn't run \`${claudeBinary()} -p /usage\``
+        : looksLoggedOut(text)
+            ? 'the claude CLI is not logged in to your subscription; run `claude auth login`'
+            : "couldn't understand the /usage output";
     writeJson(statePath('usage-failure.json'), { at: now, reason });
     return fallback(reason);
 }
